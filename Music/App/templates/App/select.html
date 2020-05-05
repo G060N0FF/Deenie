@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select playlist</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+</head>
+<body>
+    {%for playlist in playlists%}
+        <a href="{%url 'addtopl' playlist.id id title%}">{{playlist.text}}</a>
+        <br>
+    {%endfor%}
+    <br>
+    <a href="../../../">Back</a>
+</body>
+</html>
