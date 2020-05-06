@@ -121,6 +121,7 @@ def search(request):
                 sp_obj = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
                 results = sp_obj.search(q=keyword, type='album', limit=1)
                 album_name=results['albums']['items'][0]['name']
+                artist_name=results['albums']['items'][0]['artists'][0]['name']
                 album_picture = results['albums']['items'][0]['images'][1]['url']
                 albumFound=True
             except:
@@ -128,7 +129,7 @@ def search(request):
                 album_picture=''
                 albumFound=False
             #########################################################
-    context={'videos':videos, 'search_form':search_form,'found':artistFound,'picture':picture,'name':name, 'cover':album_picture,'album_name':album_name, 'albumFound':albumFound}
+    context={'videos':videos, 'search_form':search_form,'found':artistFound,'picture':picture,'name':name, 'cover':album_picture,'album_name':album_name, 'albumFound':albumFound, 'artist_name':artist_name}
     return render(request, 'App/search.html', context)
 
 def select(request, id, title):
@@ -233,11 +234,10 @@ def more(request,song_url,title):
 def refresh(request):
     return redirect('../')
 
-def album(request, album_name):
+def album(request, album_name, artist_name):
     sp_obj = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
-    results = sp_obj.search(q=album_name, type='album', limit=1)
+    results = sp_obj.search(q=album_name+" "+artist_name, type='album', limit=1)
     tracks = sp_obj.album_tracks(results['albums']['items'][0]['uri'])['items']
-    name = results['albums']['items'][0]['artists'][0]['name']
     names = []
     video_ids=[]
     similar_pictures=[]
@@ -265,5 +265,5 @@ def album(request, album_name):
         albums.append(sp_obj.artist_albums(i)['items'][index]['name'])
         similar_pictures.append(sp_obj.artist_albums(i)['items'][index]['images'][1]['url'])
     #########################################################################
-    context = {'album_name': album_name, 'picture': picture, 'videos': videos, 'name': name, 'search_form': search_form, 'similar':zip(albums,similar_pictures,similar_names)}
+    context = {'album_name': album_name, 'picture': picture, 'videos': videos, 'name': artist_name, 'search_form': search_form, 'similar':zip(albums,similar_pictures,similar_names)}
     return render(request, 'App/album.html', context)

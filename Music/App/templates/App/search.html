@@ -114,8 +114,8 @@
        {%if albumFound%}
        <table>
            <tr>
-               <td><a href="{%url 'album' album_name%}"><img height="120" width="120" src="{{cover}}"></a></td>
-               <td><a href="{%url 'album' album_name%}"><p>{{album_name}}</p></a></td>
+               <td><a href="{%url 'album' album_name artist_name%}"><img height="120" width="120" src="{{cover}}"></a></td>
+               <td><a href="{%url 'album' album_name artist_name%}"><p>{{album_name}}</p></a></td>
            </tr>
        </table>
        {%else%}

@@ -67,6 +67,20 @@
             color:#FFFFFF;
             text-align:center;
         }
+        .button {
+          background-color: #8600e6;
+          border: 1px solid #8600e6;
+          color: white;
+          padding: 15px 32px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          border-radius: 6px;
+        }
+        #footer {
+            clear:both;
+        }
     </style>
 </head>
 <body>
@@ -107,15 +121,18 @@
         <div class="float">
             <table>
                 <tr>
-                    <td class="row"><a href="{%url 'album' album%}"><img class="img" height="180px" width="180px" src="{{picture}}"></a></td>
+                    <td class="row"><a href="{%url 'album' album artist%}"><img class="img" height="180px" width="180px" src="{{picture}}"></a></td>
                     <td class="row">
-                        <p><a href="{%url 'album' album%}">{{album}}</a></p>
+                        <p><a href="{%url 'album' album artist%}">{{album}}</a></p>
                         <p>{{artist}}</p>
                     </td>
                 </tr>
             </table>
         </div>
         {%endfor%}
+    </div>
+    <div id="footer" style="float:left">
+        <a href="../" class="button">Back</a>
     </div>
 </body>
 </html>

@@ -14,5 +14,5 @@ urlpatterns = [
     path('removefrompl/<playlist_id>/<path:song_id>', views.removefrompl, name='removefrompl'),
     path('more/<song_url>/<path:title>', views.more, name='more'),
     path('refresh/', views.refresh, name='refresh'),
-    path('album/<path:album_name>',views.album,name='album'),
+    path('album/<path:album_name>/<path:artist_name>',views.album,name='album'),
 ]

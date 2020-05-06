@@ -145,8 +145,8 @@
     <div class="pldiv2">
         <h1>Artist you should check out</h1>
         <p style="color:#FFFFFF">{{name}}</p>
-        <a href="{%url 'album' album_name%}"><p style="color:#FFFFFF">Album: {{album_name}}</p></a>
-        <a href="{%url 'album' album_name%}">
+        <a href="{%url 'album' album_name name%}"><p style="color:#FFFFFF">Album: {{album_name}}</p></a>
+        <a href="{%url 'album' album_name name%}">
         <img src="{{image}}">
         </a>
         <br>
