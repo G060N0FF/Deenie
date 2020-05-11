@@ -90,6 +90,10 @@
             font-size:30px;
             color:#FFFFFF;
         }
+        .info{
+            color:white;
+            font-size:22px;
+        }
     </style>
 </head>
 <body>
@@ -150,9 +154,9 @@
     {%endif%}
     <div>
     <br>
-        <p>Popularity: {{details.popularity}}/100</p>
-        <p>Danceability: {{details.danceability}}/100</p>
-        <p>Tempo: {{details.tempo}}</p>
+        <p class="info">Popularity: {{details.popularity}}/100</p>
+        <p class="info">Danceability: {{details.danceability}}/100</p>
+        <p class="info">Tempo: {{details.tempo}}bpm</p>
         <a href="../../../" class="button">Back</a>
     </div>
 </body>

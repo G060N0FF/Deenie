@@ -267,3 +267,37 @@ def album(request, album_name, artist_name):
     #########################################################################
     context = {'album_name': album_name, 'picture': picture, 'videos': videos, 'name': artist_name, 'search_form': search_form, 'similar':zip(albums,similar_pictures,similar_names)}
     return render(request, 'App/album.html', context)
+
+def artist(request,name):
+    form=SearchForm()
+    ################################
+    sp_obj = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
+    results = sp_obj.search(q="Drake", type='artist', limit=1)
+    genres_all = results['artists']['items'][0]['genres']
+    genres = []
+    if len(genres_all) >= 3:
+        genres = genres_all[:3]
+    else:
+        genres = genres_all
+    popularity = results['artists']['items'][0]['popularity']
+    image = results['artists']['items'][0]['images'][0]['url']
+    followers = results['artists']['items'][0]['followers']['total']
+    uri = results['artists']['items'][0]['uri']
+    albums_all = []
+    pictures_all = []
+    array = sp_obj.artist_albums(uri, album_type='album', limit=50)['items']
+    for index in range(len(array)):
+        albums_all.append(array[index]['name'])
+        pictures_all.append(array[index]['images'][0]['url'])
+    passedAlbums = []
+    leng = len(albums_all)
+    albums = []
+    pictures = []
+    for i in range(leng):
+        if albums_all[i] not in passedAlbums:
+            albums.append(albums_all[i])
+            pictures.append(pictures_all[i])
+        passedAlbums.append(albums_all[i])
+    ################################
+    context={'name':name, 'search_form':form,'genres':genres,'popularity':popularity, 'image':image, 'followers':followers, 'albums':albums, 'pictures':pictures}
+    return render(request,'App/artist.html' ,context)
