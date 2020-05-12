@@ -114,7 +114,9 @@
             border:1px solid #FFFFFF;
             border-radius:8px;
             overflow:hidden;
-
+        }
+        .hoverlink:hover{
+            text-decoration:underline;
         }
     </style>
 </head>
@@ -144,14 +146,14 @@
     </div>
     <div class="pldiv2">
         <h1>Artist you should check out</h1>
-        <a href="{%url 'artist' name%}" style="color:#FFFFFF; text-decoration:none;">{{name}}</a>
-        <a href="{%url 'album' album_name name%}"><p style="color:#FFFFFF">Album: {{album_name}}</p></a>
+        <a href="{%url 'artist' name%}" style="color:#FFFFFF; text-decoration:none;"><p class="hoverlink">{{name}}</p></a>
+        <a href="{%url 'album' album_name name%}"><p style="color:#FFFFFF" class="hoverlink">Album: {{album_name}}</p></a>
         <a href="{%url 'album' album_name name%}">
         <img src="{{image}}">
         </a>
         <br>
         <br>
-        <a style="color:#FFFFFF; text-align:right" href="{%url 'refresh'%}">Other artist</a>
+        <a style="color:#FFFFFF; text-align:right" href="{%url 'refresh'%}" class="hoverlink">Other artist</a>
     </div>
     <div class="pldiv3">
         <h1>Your account</h1>

@@ -81,6 +81,12 @@
         #footer {
             clear:both;
         }
+        .namehover:hover{
+            text-decoration:underline;
+        }
+        .button:hover{
+            text-decoration:underline;
+        }
     </style>
 </head>
 <body>
@@ -97,7 +103,7 @@
                 <td class="row"><img class="img" height="200px" width="200px" src="{{picture}}"></td>
                 <td class="row">
                     <p class="albumn">{{album_name}}</p>
-                    <p class="albumn">{{name}}</p>
+                    <p class="albumn namehover"><a href="{%url 'artist' name%}">{{name}}</a></p>
                 </td>
             </tr>
         </table>
@@ -124,7 +130,7 @@
                     <td class="row"><a href="{%url 'album' album artist%}"><img class="img" height="180px" width="180px" src="{{picture}}"></a></td>
                     <td class="row">
                         <p><a href="{%url 'album' album artist%}">{{album}}</a></p>
-                        <p>{{artist}}</p>
+                        <p class="namehover"><a href="{%url 'artist' artist%}">{{artist}}</a></p>
                     </td>
                 </tr>
             </table>

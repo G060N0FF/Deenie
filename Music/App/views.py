@@ -272,7 +272,7 @@ def artist(request,name):
     form=SearchForm()
     ################################
     sp_obj = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
-    results = sp_obj.search(q="Drake", type='artist', limit=1)
+    results = sp_obj.search(q=name, type='artist', limit=1)
     genres_all = results['artists']['items'][0]['genres']
     genres = []
     if len(genres_all) >= 3:
@@ -299,5 +299,18 @@ def artist(request,name):
             pictures.append(pictures_all[i])
         passedAlbums.append(albums_all[i])
     ################################
-    context={'name':name, 'search_form':form,'genres':genres,'popularity':popularity, 'image':image, 'followers':followers, 'albums':albums, 'pictures':pictures}
+    similar_artists=[]
+    artist_pictures=[]
+    endofrow=[]
+    for i in range(5):
+        similar_artists.append(sp_obj.artist_related_artists(uri)['artists'][i]['name'])
+        artist_pictures.append(sp_obj.artist_related_artists(uri)['artists'][i]['images'][2]['url'])
+        if i == 0 or i==2 or i == 4:
+            endofrow.append(True)
+        else:
+            endofrow.append(False)
+    similar=zip(similar_artists,artist_pictures,endofrow)
+    albpic=zip(albums,pictures)
+    ################################
+    context={'name':name, 'search_form':form,'genres':genres,'popularity':popularity, 'image':image, 'followers':followers, 'albpic':albpic, 'similar':similar}
     return render(request,'App/artist.html' ,context)

@@ -94,6 +94,21 @@
             color:white;
             font-size:22px;
         }
+        .similar p:hover{
+            text-decoration:underline;
+        }
+        .end p:hover{
+            text-decoration:underline;
+        }
+        .button:hover{
+            text-decoration:underline;
+        }
+        .player a:hover{
+            text-decoration:underline;
+        }
+        .td a:hover{
+            text-decoration:underline;
+        }
     </style>
 </head>
 <body>
@@ -112,12 +127,12 @@
                 </td>
                 <td class="td">
                     <h1>{{song_title}}</h1>
-                    <p class="Drake">{{details.artist}}</p>
+                    <a href="{%url 'artist' details.artist%}"><p class="Drake">{{details.artist}}</p></a>
                 </td>
             </tr>
             <tr>
                 <td class="player">
-                        <a href="{{real_url}}">Play/Download</a>
+                        <a href="{{real_url}}" target="_blank">Play/Download</a>
                 </td>
             </tr>
         </table>
@@ -133,8 +148,8 @@
     <div class="end">
         <table>
             <tr>
-                <td><img height="34" width="34" src="{{picture}}"></td>
-                <td><p class="size">{{artist_name}}</p></td>
+                <td><a href="{%url 'artist' artist_name%}"><img height="34" width="34" src="{{picture}}"></a></td>
+                <td><a href="{%url 'artist' artist_name%}"><p class="size">{{artist_name}}</p></a></td>
             </tr>
         </table>
     </div>
@@ -142,8 +157,8 @@
     <div class="similar">
         <table>
             <tr>
-                <td><img height="34" width="34" src="{{picture}}"></td>
-                <td><p class="size">{{artist_name}}</p></td>
+                <td><a href="{%url 'artist' artist_name%}"><img height="34" width="34" src="{{picture}}"></a></td>
+                <td><a href="{%url 'artist' artist_name%}"><p class="size">{{artist_name}}</p></a></td>
             </tr>
         </table>
     </div>
