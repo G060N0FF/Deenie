@@ -127,7 +127,11 @@
                 </td>
                 <td class="td">
                     <h1>{{song_title}}</h1>
-                    <a href="{%url 'artist' details.artist%}"><p class="Drake">{{details.artist}}</p></a>
+                    {%if details.isfound%}
+                        <a href="{%url 'artist' details.artist%}"><p class="Drake">{{details.artist}}</p></a>
+                    {%else%}
+                        <p class="Drake">{{details.artist}}</p>
+                    {%endif%}
                 </td>
             </tr>
             <tr>
