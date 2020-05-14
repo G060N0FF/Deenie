@@ -218,17 +218,14 @@ def more(request,song_url,title):
         song_url=results1[0]['id']
     search_form = SearchForm()
     url = 'http://www.youtube.com/watch?v=' + str(song_url)
-    video = pafy.new(url)
-    s = video.getbestaudio(preftype='m4a')
-    audio_stream = {'extension': s.extension, 'video_url': s.url + "&title=" + video.title}
     real_url=YouTube(url).streams.filter(only_audio=True).first().url
     ##################################################################################
     if image=='':
-        image=video.thumb
+        image=YouTube(url).thumbnail_url
     ##################################################################################
     details = {'popularity': song_popularity, 'danceability': song_danceability, 'tempo': song_tempo, 'artist': artist,
                'artists': artists, 'image': image, 'isfound': isfound}
-    context = {'url':song_url,'stream': audio_stream, 'title': video.title, 'song_title': real_title, 'details':details, 'search_form':search_form, 'real_url':real_url}
+    context = {'url':song_url, 'song_title': real_title, 'details':details, 'search_form':search_form, 'real_url':real_url}
     return render(request, 'App/more.html', context)
 
 def refresh(request):
