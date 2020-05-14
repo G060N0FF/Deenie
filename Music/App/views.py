@@ -125,6 +125,7 @@ def search(request):
                 album_picture = results['albums']['items'][0]['images'][1]['url']
                 albumFound=True
             except:
+                artist_name = ''
                 album_name=''
                 album_picture=''
                 albumFound=False
