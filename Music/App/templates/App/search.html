@@ -63,12 +63,15 @@
           font-size: 16px;
           border-radius: 6px;
         }
+        table a:hover{
+            text-decoration:underline;
+        }
     </style>
 
 </head>
 <body>
    <div class="topnav">
-        <img class="logo" src="https://img.techpowerup.org/200416/logoog.png" height="43" width="122">
+        <a href="../"><img class="logo" src="https://img.techpowerup.org/200416/logoog.png" height="43" width="122"></a>
         <form class="form" action="{%url 'search'%}" method="post">
             {%csrf_token%}
             {{search_form}}
@@ -104,7 +107,7 @@
        <table>
            <tr>
                <td><img height="120" width="120" src="{{picture}}"></td>
-               <td><p>{{name}}</p></td>
+               <td><a href="{%url 'artist' name%}">{{name}}</a></td>
            </tr>
        </table>
        {%else%}

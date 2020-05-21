@@ -88,11 +88,14 @@
         .button:hover{
             text-decoration:underline;
         }
+        .song:hover{
+            text-decoration:underline;
+        }
     </style>
 </head>
 <body>
     <div class="topnav">
-        <img class="logo" src="https://img.techpowerup.org/200416/logoog.png" height="43" width="122">
+        <a href="../../../"><img class="logo" src="https://img.techpowerup.org/200416/logoog.png" height="43" width="122"></a>
         <form class="form" action="{%url 'search'%}" method="post">
             {%csrf_token%}
             {{search_form}}
@@ -113,7 +116,7 @@
             {% for id, title in videos%}
                <tr>
                     <div class="vid">
-                        <td><a href="{%url 'more' id title%}"><p style="display:inline; vertical-align: middle;">{{title}}</p></a></td>
+                        <td><a href="{%url 'more' id title%}" class="song"><p style="display:inline; vertical-align: middle;">{{title}}</p></a></td>
                     </div>
                    <td class="space"><a href="{%url 'select' id title%}" class="playlist">Add to playlist</a></td>
                </tr>

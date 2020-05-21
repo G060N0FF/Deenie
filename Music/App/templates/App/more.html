@@ -113,7 +113,7 @@
 </head>
 <body>
     <div class="topnav">
-        <img class="logo" src="https://img.techpowerup.org/200416/logoog.png" height="43" width="122">
+        <a href="../../../"><img class="logo" src="https://img.techpowerup.org/200416/logoog.png" height="43" width="122"></a>
         <form class="form" action="{%url 'search'%}" method="post">
             {%csrf_token%}
             {{search_form}}
@@ -171,12 +171,22 @@
     {%endfor%}
 
     {%endif%}
+    {%if details.isfound%}
     <div>
-    <br>
+        <br>
         <p class="info">Popularity: {{details.popularity}}/100</p>
         <p class="info">Danceability: {{details.danceability}}/100</p>
         <p class="info">Tempo: {{details.tempo}}bpm</p>
         <a href="../../../" class="button">Back</a>
     </div>
+    {%else%}
+    <div>
+        <br>
+        <p class="info">Popularity: N/A</p>
+        <p class="info">Danceability: N/A</p>
+        <p class="info">Tempo: N/A</p>
+        <a href="../../../" class="button">Back</a>
+    </div>
+    {%endif%}
 </body>
 </html>

@@ -10,3 +10,7 @@ class Song(models.Model):
     url=models.CharField(max_length=200)
     playlist = models.ForeignKey(Playlist, on_delete=models.CASCADE, null=True, related_name='songs')
     title=models.CharField(max_length=200)
+
+class URIs(models.Model):
+    uri=models.CharField(max_length=200)
+    user=models.ForeignKey(get_user_model(), on_delete=models.CASCADE, null=True, related_name='uris')

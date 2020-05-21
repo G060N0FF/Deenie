@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, authenticate
-from .models import Playlist, Song
+from .models import Playlist, Song, URIs
 from .forms import PlaylistForm, SearchForm
 from django.conf import settings
 import requests
@@ -30,7 +30,30 @@ def index(request):
     album_name = sp_obj.playlist(pl_url)['tracks']['items'][number]['track']['album']['name']
     image = sp_obj.playlist(pl_url)['tracks']['items'][number]['track']['album']['images'][2]['url']
     username=request.user
-    context={'playlists':playlists, 'form':form, 'search_form':search_form, 'name':name, 'image':image, 'album_name':album_name, 'username':username}
+    uris=request.user.uris.all()
+    ######################################
+    urilist=[]
+    for uri in uris:
+        urilist.append(uri.uri)
+    ######################################
+    if len(urilist)>0:
+        recommended_tracks = sp_obj.recommendations(seed_tracks=['spotify:track:7g7raxdQpiLZT7aOlib4S1'], limit=3)['tracks']
+        recommended_tracks_names = []
+        recommended_tracks_artists = []
+        recommended_tracks_pictures = []
+        recommended_tracks_albums = []
+        for i in range(3):
+            recommended_tracks_names.append(recommended_tracks[i]['name'])
+            recommended_tracks_artists.append(recommended_tracks[i]['artists'][0]['name'])
+            recommended_tracks_pictures.append(recommended_tracks[i]['album']['images'][0]['url'])
+            recommended_tracks_albums.append(recommended_tracks[i]['album']['name'])
+        recommended_zip = zip(recommended_tracks_names, recommended_tracks_artists, recommended_tracks_pictures, recommended_tracks_albums)
+        isFound=True
+    else:
+        recommended_zip=[]
+        isFound=False
+    ######################################
+    context={'playlists':playlists, 'form':form, 'search_form':search_form, 'name':name, 'image':image, 'album_name':album_name, 'username':username, 'uris':uris, 'zip':recommended_zip, 'isFound':isFound}
     return render(request, 'App/index.html', context)
 
 def register(request):
@@ -135,7 +158,8 @@ def search(request):
 
 def select(request, id, title):
     playlists=request.user.playlists.all()
-    context={'playlists':playlists, 'id':id, 'title':title}
+    form=SearchForm()
+    context={'playlists':playlists, 'id':id, 'title':title, 'search_form':form}
     return render(request, 'App/select.html', context)
 
 def addtopl(request, playlist_id, id, title):
@@ -199,6 +223,8 @@ def more(request,song_url,title):
                 endofrow.append(False)
         real_title=track['name']
         artists=zip(similar_artists,pictures,endofrow)
+        new_uri=URIs(uri=song_uri, user=request.user)
+        new_uri.save()
         isfound=True
     except:
         song_popularity="-"

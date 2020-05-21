@@ -117,11 +117,37 @@
         .hoverlink:hover{
             text-decoration:underline;
         }
+        .container{
+            float:left;
+            clear:both;
+            width:100%;
+            text-align:center;
+        }
+        .rsong{
+            background-color:#8600e6;
+            border-radius:10px;
+            display:inline-block;
+            margin:0px 20px;
+        }
+        .rsong img{
+            padding:0px 10px;
+        }
+        .rsong p, .rsong a{
+            color:white;
+        }
+        .rsong p:hover{
+            text-decoration:underline;
+        }
+        @media screen and (max-width:600px){
+            .rsong{
+                margin:15px 20px !important;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="topnav">
-        <img class="logo" src="https://img.techpowerup.org/200416/logoog.png" height="43" width="122">
+        <a href="#"><img class="logo" src="https://img.techpowerup.org/200416/logoog.png" height="43" width="122"></a>
         <form class="form" action="{%url 'search'%}" method="post">
             {%csrf_token%}
             {{search_form}}
@@ -158,6 +184,17 @@
         <h1>Your account</h1>
         <p style="color:white; font-size:20px;">{{username}}</p>
         <a class="lgout" href="accounts/logout?next=/">Logout</a>
+    </div>
+    <div class="container">
+        {%if isFound%}
+        {%for name, artist, picture, album in zip%}
+        <div class="rsong">
+            <a href="{%url 'more' 1 name%}"><p>{{name}}</p></a>
+            <a href="{%url 'artist' artist%}"><p>{{artist}}</p></a>
+            <a href="{%url 'album' album artist%}"><img height="230px" src="{{picture}}"></a>
+        </div>
+        {%endfor%}
+        {%endif%}
     </div>
 </body>
 </html>
