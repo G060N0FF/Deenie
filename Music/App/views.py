@@ -13,7 +13,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import random
 import json
 from django.views.decorators.csrf import csrf_exempt
-from pytube import YouTube
+from YouPy import YouTubeItem
 from django.http import FileResponse, HttpResponse
 from youtube_search import YoutubeSearch
 import youtube_dl
@@ -245,10 +245,10 @@ def more(request,song_url,title):
         song_url=results1[0]['id']
     search_form = SearchForm()
     url = 'http://www.youtube.com/watch?v=' + str(song_url)
-    real_url=YouTube(url).streams.filter(only_audio=True).first().url
+    real_url=YouTubeItem(url, request_headers={'cookie': 'my cookies'}).streams.filter(only_audio=True).first().url
     ##################################################################################
     if image=='':
-        image=YouTube(url).thumbnail_url
+        image=YouTubeItem(url, request_headers={'cookie': 'VISITOR_INFO1_LIVE=IUdXkQ1imu0; CONSENT=YES+BG.bg+20150830-14-0; PREF=f4=4000000&al=bg&f1=50000000&f5=30030; LOGIN_INFO=AFmmF2swRQIhANxn7BDmIPCoLmoU2bLX6ZBjkWAR2ZIDUqW7KCU0OcTXAiBvuT2VlzAqbRsWIQe7kpkj0f970YKGjngGb7xZ4bhSqw:QUQ3MjNmeEVwUVY2ZVBfSVBKQVJkRVRuY055cEJpenVEMUQ3LUROSjBuVlF0ZjhDTGxnUFI5bFJhcHg0MzRQRjFFWDFCTFY5Z0dSaWRhOE5ja2FRTUZDZ2JuSjNjNGhhMWJYUkxwVDVNN095eUdwVlNqcVhsTS14NDltOXF4RFpnbjQxZk9DX0MyYm5ZN29mYVdYTWtOZTNQVUV2bFNNSGIxQmlOVXRUNm90OE9UZFhrNmVjLVlJ; SID=xQc0wBkRLgQJt3RONGwfIMNVNBbJ1hHAI9OLKWy4R5--GPWOQKhSBwKP4e9HWAD71eTYZQ.; __Secure-3PSID=xQc0wBkRLgQJt3RONGwfIMNVNBbJ1hHAI9OLKWy4R5--GPWOFMGUjC44_KS-OCkkFGagRA.; HSID=ACkf8eiNtJrbQxxLQ; SSID=AgHMJIxheUPFCTQeF; APISID=iqC5Jg1qKdLaxzwH/A7tfqXKHpbllbat7Y; SAPISID=ZTUCKejsG3jbMsSI/AiW4-j0WTTrm-1QM8; __Secure-HSID=ACkf8eiNtJrbQxxLQ; __Secure-SSID=AgHMJIxheUPFCTQeF; __Secure-APISID=iqC5Jg1qKdLaxzwH/A7tfqXKHpbllbat7Y; __Secure-3PAPISID=ZTUCKejsG3jbMsSI/AiW4-j0WTTrm-1QM8; SIDCC=AJi4QfFsSW5aWfVzGCZr_WFYcRtrBQr_tCpYdx70q7XRs3Io3PT9fSpVZZtyWPi1WY7QO4Bg0KY'}).thumbnail_url
     ##################################################################################
     details = {'popularity': song_popularity, 'danceability': song_danceability, 'tempo': song_tempo, 'artist': artist,
                'artists': artists, 'image': image, 'isfound': isfound}
