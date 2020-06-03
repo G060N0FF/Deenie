@@ -1,41 +1,50 @@
+# stdlib imports
+import random
+
+# pip installed imports
+import pafy
+import spotipy
+from youtube_search import YoutubeSearch
+from spotipy.oauth2 import SpotifyClientCredentials
+import youtube_dl
+
+# custom packages import
+from YouPy import YouTubeItem
+
+# Django imports
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login, authenticate
 from .models import Playlist, Song, URIs
 from .forms import PlaylistForm, SearchForm
-from django.conf import settings
-import requests
-import pafy
-import spotipy
-import webbrowser
-from spotipy.oauth2 import SpotifyClientCredentials
-import random
-import json
 from django.views.decorators.csrf import csrf_exempt
-from YouPy import YouTubeItem
-from django.http import FileResponse, HttpResponse
-from youtube_search import YoutubeSearch
-import youtube_dl
 
 @login_required
 def index(request):
+    # get current user's playlists from database
     playlists=request.user.playlists.all()
+    # form for creating playlists
     form=PlaylistForm()
+    # form for searching
     search_form=SearchForm()
+
+    # generate random album to recommend to the user
     sp_obj = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
     pl_url = sp_obj.category_playlists()['playlists']['items'][0]['href']
     number = random.randint(0, 40)
     name=sp_obj.playlist(pl_url)['tracks']['items'][number]['track']['album']['artists'][0]['name']
     album_name = sp_obj.playlist(pl_url)['tracks']['items'][number]['track']['album']['name']
     image = sp_obj.playlist(pl_url)['tracks']['items'][number]['track']['album']['images'][2]['url']
+
+    # get the user's name
     username=request.user
+
+    # find recommended songs for the user
     uris=request.user.uris.all()
-    ######################################
     urilist=[]
     for uri in uris:
         urilist.append(uri.uri)
-    ######################################
     if len(urilist)>0:
         recommended_tracks = sp_obj.recommendations(seed_tracks=['spotify:track:7g7raxdQpiLZT7aOlib4S1'], limit=3)['tracks']
         recommended_tracks_names = []
@@ -52,12 +61,24 @@ def index(request):
     else:
         recommended_zip=[]
         isFound=False
-    ######################################
-    context={'playlists':playlists, 'form':form, 'search_form':search_form, 'name':name, 'image':image, 'album_name':album_name, 'username':username, 'uris':uris, 'zip':recommended_zip, 'isFound':isFound}
+
+    context={'playlists':playlists,
+             'form':form,
+             'search_form':search_form,
+             'name':name, 'image':image,
+             'album_name':album_name,
+             'username':username,
+             'uris':uris,
+             'zip':recommended_zip,
+             'isFound':isFound
+             }
     return render(request, 'App/index.html', context)
 
 def register(request):
+    # get the registration form
     form=UserCreationForm()
+
+    # register a new user
     if request.method=="POST":
         form=UserCreationForm(request.POST)
         if form.is_valid():
@@ -67,55 +88,52 @@ def register(request):
             user=authenticate(username=username, password=password)
             login(request, user)
             return redirect('../')
+
     context={'form':form}
     return render(request, 'registration/register.html', context)
 
 def add(request):
+    # get the form for creating new playlist
     form=PlaylistForm()
+
+    #create the new playlist
     if request.method=="POST":
         form=PlaylistForm(request.POST)
         if form.is_valid():
             new_playlist=Playlist(text=request.POST['text'], user=request.user)
             new_playlist.save()
+
     return redirect('../')
 
 def delete(request, playlist_id):
+    # delete playlist by id
     playlist=request.user.playlists.get(pk=playlist_id)
     playlist.delete()
+
     return redirect('../../')
 
 def playlist(request, playlist_id):
+    # get the search form
     search_form=SearchForm()
+
+    # get the playlist and show it's songs
     playlist=request.user.playlists.get(pk=playlist_id)
     songs=playlist.songs.all()
+
     context={'songs':songs, 'playlist':playlist, 'search_form':search_form}
     return render(request, 'App/playlist.html',context)
 
 def search(request):
+    # search youtube and spotify
     video_ids=[]
     video_titles=[]
     video_thumbnails=[]
     pictureFound=[]
-    #search_url='https://www.googleapis.com/youtube/v3/search'
-    #search_form=SearchForm()
     if request.method=="POST":
         search_form=SearchForm(request.POST)
         if search_form.is_valid():
+            # find youtube video for the keyword provided
             keyword=request.POST['keyword']
-            # search_params={
-            #     'part':'snippet',
-            #     'key':settings.YOUTUBE_DATA_API_KEY,
-            #     'q':keyword,
-            #     'type':'video',
-            #     'maxResults': 3
-            # }
-            # r=requests.get(search_url, params=search_params)
-            # results=r.json()['items']
-            # for result in results:
-            #     video_ids.append((result['id']['videoId']).replace('&#39;',"'").replace('&amp;', '&'))
-            #     video_titles.append(result['snippet']['title'].replace('&#39;',"'").replace('&amp;', '&'))
-            #     video_thumbnails.append(result['snippet']['thumbnails']['default']['url'].replace('&#39;',"'").replace('&amp;', '&'))
-
             results = YoutubeSearch(keyword, max_results=3).to_dict()
             for i in range(len(results)):
                 video_ids.append(results[i]['id'])
@@ -128,7 +146,8 @@ def search(request):
                     video_thumbnails.append('https://image.flaticon.com/icons/png/512/181/181668.png')
                     pictureFound.append(False)
             videos=zip(video_ids,video_titles,video_thumbnails, pictureFound)
-            #########################################################
+
+            # search spotify for artists
             try:
                 sp_obj = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
                 results = sp_obj.search(q='artist:' + keyword, type='artist')
@@ -139,7 +158,8 @@ def search(request):
                 picture=0
                 name=0
                 artistFound=False
-            #########################################################
+
+            # search spotipy for albums
             try:
                 sp_obj = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
                 results = sp_obj.search(q=keyword, type='album', limit=1)
@@ -152,36 +172,45 @@ def search(request):
                 album_name=''
                 album_picture=''
                 albumFound=False
-            #########################################################
-    context={'videos':videos, 'search_form':search_form,'found':artistFound,'picture':picture,'name':name, 'cover':album_picture,'album_name':album_name, 'albumFound':albumFound, 'artist_name':artist_name}
+
+    context={'videos':videos,
+             'search_form':search_form,
+             'found':artistFound,
+             'picture':picture,
+             'name':name,
+             'cover':album_picture,
+             'album_name':album_name,
+             'albumFound':albumFound,
+             'artist_name':artist_name}
     return render(request, 'App/search.html', context)
 
 def select(request, id, title):
+    # select playlist to add current song to
     playlists=request.user.playlists.all()
     form=SearchForm()
     context={'playlists':playlists, 'id':id, 'title':title, 'search_form':form}
     return render(request, 'App/select.html', context)
 
 def addtopl(request, playlist_id, id, title):
+    # add song to selected playlist
     playlistSelected=request.user.playlists.get(pk=playlist_id)
     song=Song(url=id, playlist=playlistSelected, title=title)
     song.save()
     return redirect('../../../../')
 
 def removefrompl(request, playlist_id, song_id):
+    # remove song from playlist
     playlistSelected=request.user.playlists.get(pk=playlist_id)
     songToDel=playlistSelected.songs.get(pk=song_id)
     songToDel.delete()
     return redirect('../../../playlist/'+str(playlist_id))
 
+# render a page for the selected song
 @csrf_exempt
 def more(request,song_url,title):
+    # search spotify for details of the song (danceability, tempo etc.)
     try:
-        username = 'dgrqnco2rx8hdu58kv9if9eho'
-        scope = 'user-read-private user-read-playback-state user-modify-playback-state'
-
         sp_obj = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
-
         ss = title
         ss=ss.split('ft.')
         ss=ss[0]
@@ -194,20 +223,14 @@ def more(request,song_url,title):
         else:
             q = ss
         query = sp_obj.search(q, 1, 0, 'track')
-
-        # <<<<<<<<<<SONG>>>>>>>>>>
-
-        # FIND THE SONG URI
         song_uri = query['tracks']['items'][0]['uri']
-
         track = sp_obj.track(song_uri)
         track_data = sp_obj.audio_features(song_uri)
-
         song_popularity = track['popularity']
         song_danceability = int(track_data[0]['danceability']*100)
-        song_energy = track_data[0]['energy']
-        song_loudness = track_data[0]['loudness']
         song_tempo = int(track_data[0]['tempo'])
+
+        # find similar artists to the current one
         artist_uri = sp_obj.track(song_uri)['album']['artists'][0]['uri']
         artist = sp_obj.artist(artist_uri)['name']
         similar_artists = []
@@ -239,26 +262,52 @@ def more(request,song_url,title):
         real_title=title
         isfound=False
 
-
+    '''
+    If a user got to this page with an url of the song that is equal to 1, this means that instead of the youtube url we
+    redirected to this function using argument 1.
+    
+    In the "albums" page we are redirecting to the "more" page using an url equal to one as it takes a lot of time to 
+    find the url for every single song and this slows the site down. Instead we go to the more page and find the youtube
+    url here.
+    '''
     if song_url=='1':
         results1 = YoutubeSearch(artist+" "+title, max_results=1).to_dict()
         song_url=results1[0]['id']
     search_form = SearchForm()
     url = 'http://www.youtube.com/watch?v=' + str(song_url)
-    real_url=YouTubeItem(url, request_headers={'cookie': 'my cookies'}).streams.filter(only_audio=True).first().url
-    ##################################################################################
+    real_url=YouTubeItem(url, request_headers={
+        'cookie': 'VISITOR_INFO1_LIVE=IUdXkQ1imu0; CONSENT=YES+BG.bg+20150830-14-0; PREF=f4=4000000&al=bg&f1=50000000&f5=30030; LOGIN_INFO=AFmmF2swRQIhANxn7BDmIPCoLmoU2bLX6ZBjkWAR2ZIDUqW7KCU0OcTXAiBvuT2VlzAqbRsWIQe7kpkj0f970YKGjngGb7xZ4bhSqw:QUQ3MjNmeEVwUVY2ZVBfSVBKQVJkRVRuY055cEJpenVEMUQ3LUROSjBuVlF0ZjhDTGxnUFI5bFJhcHg0MzRQRjFFWDFCTFY5Z0dSaWRhOE5ja2FRTUZDZ2JuSjNjNGhhMWJYUkxwVDVNN095eUdwVlNqcVhsTS14NDltOXF4RFpnbjQxZk9DX0MyYm5ZN29mYVdYTWtOZTNQVUV2bFNNSGIxQmlOVXRUNm90OE9UZFhrNmVjLVlJ; SID=xQc0wBkRLgQJt3RONGwfIMNVNBbJ1hHAI9OLKWy4R5--GPWOQKhSBwKP4e9HWAD71eTYZQ.; __Secure-3PSID=xQc0wBkRLgQJt3RONGwfIMNVNBbJ1hHAI9OLKWy4R5--GPWOFMGUjC44_KS-OCkkFGagRA.; HSID=ACkf8eiNtJrbQxxLQ; SSID=AgHMJIxheUPFCTQeF; APISID=iqC5Jg1qKdLaxzwH/A7tfqXKHpbllbat7Y; SAPISID=ZTUCKejsG3jbMsSI/AiW4-j0WTTrm-1QM8; __Secure-HSID=ACkf8eiNtJrbQxxLQ; __Secure-SSID=AgHMJIxheUPFCTQeF; __Secure-APISID=iqC5Jg1qKdLaxzwH/A7tfqXKHpbllbat7Y; __Secure-3PAPISID=ZTUCKejsG3jbMsSI/AiW4-j0WTTrm-1QM8; SIDCC=AJi4QfFsSW5aWfVzGCZr_WFYcRtrBQr_tCpYdx70q7XRs3Io3PT9fSpVZZtyWPi1WY7QO4Bg0KY'
+    }).streams.filter(only_audio=True).first().url
     if image=='':
-        image=YouTubeItem(url, request_headers={'cookie': 'VISITOR_INFO1_LIVE=IUdXkQ1imu0; CONSENT=YES+BG.bg+20150830-14-0; PREF=f4=4000000&al=bg&f1=50000000&f5=30030; LOGIN_INFO=AFmmF2swRQIhANxn7BDmIPCoLmoU2bLX6ZBjkWAR2ZIDUqW7KCU0OcTXAiBvuT2VlzAqbRsWIQe7kpkj0f970YKGjngGb7xZ4bhSqw:QUQ3MjNmeEVwUVY2ZVBfSVBKQVJkRVRuY055cEJpenVEMUQ3LUROSjBuVlF0ZjhDTGxnUFI5bFJhcHg0MzRQRjFFWDFCTFY5Z0dSaWRhOE5ja2FRTUZDZ2JuSjNjNGhhMWJYUkxwVDVNN095eUdwVlNqcVhsTS14NDltOXF4RFpnbjQxZk9DX0MyYm5ZN29mYVdYTWtOZTNQVUV2bFNNSGIxQmlOVXRUNm90OE9UZFhrNmVjLVlJ; SID=xQc0wBkRLgQJt3RONGwfIMNVNBbJ1hHAI9OLKWy4R5--GPWOQKhSBwKP4e9HWAD71eTYZQ.; __Secure-3PSID=xQc0wBkRLgQJt3RONGwfIMNVNBbJ1hHAI9OLKWy4R5--GPWOFMGUjC44_KS-OCkkFGagRA.; HSID=ACkf8eiNtJrbQxxLQ; SSID=AgHMJIxheUPFCTQeF; APISID=iqC5Jg1qKdLaxzwH/A7tfqXKHpbllbat7Y; SAPISID=ZTUCKejsG3jbMsSI/AiW4-j0WTTrm-1QM8; __Secure-HSID=ACkf8eiNtJrbQxxLQ; __Secure-SSID=AgHMJIxheUPFCTQeF; __Secure-APISID=iqC5Jg1qKdLaxzwH/A7tfqXKHpbllbat7Y; __Secure-3PAPISID=ZTUCKejsG3jbMsSI/AiW4-j0WTTrm-1QM8; SIDCC=AJi4QfFsSW5aWfVzGCZr_WFYcRtrBQr_tCpYdx70q7XRs3Io3PT9fSpVZZtyWPi1WY7QO4Bg0KY'}).thumbnail_url
-    ##################################################################################
-    details = {'popularity': song_popularity, 'danceability': song_danceability, 'tempo': song_tempo, 'artist': artist,
-               'artists': artists, 'image': image, 'isfound': isfound}
-    context = {'url':song_url, 'song_title': real_title, 'details':details, 'search_form':search_form, 'real_url':real_url}
+        image=YouTubeItem(url, request_headers={
+            'cookie': 'VISITOR_INFO1_LIVE=IUdXkQ1imu0; CONSENT=YES+BG.bg+20150830-14-0; PREF=f4=4000000&al=bg&f1=50000000&f5=30030; LOGIN_INFO=AFmmF2swRQIhANxn7BDmIPCoLmoU2bLX6ZBjkWAR2ZIDUqW7KCU0OcTXAiBvuT2VlzAqbRsWIQe7kpkj0f970YKGjngGb7xZ4bhSqw:QUQ3MjNmeEVwUVY2ZVBfSVBKQVJkRVRuY055cEJpenVEMUQ3LUROSjBuVlF0ZjhDTGxnUFI5bFJhcHg0MzRQRjFFWDFCTFY5Z0dSaWRhOE5ja2FRTUZDZ2JuSjNjNGhhMWJYUkxwVDVNN095eUdwVlNqcVhsTS14NDltOXF4RFpnbjQxZk9DX0MyYm5ZN29mYVdYTWtOZTNQVUV2bFNNSGIxQmlOVXRUNm90OE9UZFhrNmVjLVlJ; SID=xQc0wBkRLgQJt3RONGwfIMNVNBbJ1hHAI9OLKWy4R5--GPWOQKhSBwKP4e9HWAD71eTYZQ.; __Secure-3PSID=xQc0wBkRLgQJt3RONGwfIMNVNBbJ1hHAI9OLKWy4R5--GPWOFMGUjC44_KS-OCkkFGagRA.; HSID=ACkf8eiNtJrbQxxLQ; SSID=AgHMJIxheUPFCTQeF; APISID=iqC5Jg1qKdLaxzwH/A7tfqXKHpbllbat7Y; SAPISID=ZTUCKejsG3jbMsSI/AiW4-j0WTTrm-1QM8; __Secure-HSID=ACkf8eiNtJrbQxxLQ; __Secure-SSID=AgHMJIxheUPFCTQeF; __Secure-APISID=iqC5Jg1qKdLaxzwH/A7tfqXKHpbllbat7Y; __Secure-3PAPISID=ZTUCKejsG3jbMsSI/AiW4-j0WTTrm-1QM8; SIDCC=AJi4QfFsSW5aWfVzGCZr_WFYcRtrBQr_tCpYdx70q7XRs3Io3PT9fSpVZZtyWPi1WY7QO4Bg0KY'
+        }).thumbnail_url
+
+    # get all song details together
+    details = {'popularity': song_popularity,
+               'danceability': song_danceability,
+               'tempo': song_tempo,
+               'artist': artist,
+               'artists': artists,
+               'image': image,
+               'isfound': isfound
+               }
+
+    context = {'url':song_url,
+               'song_title': real_title,
+               'details':details,
+               'search_form':search_form,
+               'real_url':real_url
+               }
     return render(request, 'App/more.html', context)
 
+# a function that allows us to refresh the current page
+# it is used to find new random album for the user
 def refresh(request):
     return redirect('../')
 
 def album(request, album_name, artist_name):
+    #get all tracks of the album
     sp_obj = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
     results = sp_obj.search(q=album_name+" "+artist_name, type='album', limit=1)
     tracks = sp_obj.album_tracks(results['albums']['items'][0]['uri'])['items']
@@ -271,7 +320,8 @@ def album(request, album_name, artist_name):
         video_ids.append('1')
     videos=zip(video_ids, names)
     search_form=SearchForm()
-    ######################################################
+
+    # find similar artists to the album artist
     artist_uri = results['albums']['items'][0]['artists'][0]['uri']
     similar_artists = []
     similar_names=[]
@@ -284,29 +334,44 @@ def album(request, album_name, artist_name):
         similar_artists.append(sp_obj.artist_related_artists(artist_uri)['artists'][index]['uri'])
         similar_names.append(sp_obj.artist_related_artists(artist_uri)['artists'][index]['name'])
         forbidden.append(index)
+
+    # get random albums from the similar artists and recommend them to the user
     for i in similar_artists:
         index = random.randint(0, len(sp_obj.artist_albums(i)['items'])-1)
         albums.append(sp_obj.artist_albums(i)['items'][index]['name'])
         similar_pictures.append(sp_obj.artist_albums(i)['items'][index]['images'][1]['url'])
-    #########################################################################
-    context = {'album_name': album_name, 'picture': picture, 'videos': videos, 'name': artist_name, 'search_form': search_form, 'similar':zip(albums,similar_pictures,similar_names)}
+
+    context = {'album_name': album_name,
+               'picture': picture,
+               'videos': videos,
+               'name': artist_name,
+               'search_form': search_form,
+               'similar':zip(albums,similar_pictures,similar_names)
+               }
     return render(request, 'App/album.html', context)
 
 def artist(request,name):
     form=SearchForm()
-    ################################
+
+    # get the artist
     sp_obj = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
     results = sp_obj.search(q=name, type='artist', limit=1)
+
+    # find the artist's top 3 genres
     genres_all = results['artists']['items'][0]['genres']
     genres = []
     if len(genres_all) >= 3:
         genres = genres_all[:3]
     else:
         genres = genres_all
+
+    # get details about the artist
     popularity = results['artists']['items'][0]['popularity']
     image = results['artists']['items'][0]['images'][0]['url']
     followers = results['artists']['items'][0]['followers']['total']
     uri = results['artists']['items'][0]['uri']
+
+    # get artist's  albums
     albums_all = []
     pictures_all = []
     array = sp_obj.artist_albums(uri, album_type='album', limit=50)['items']
@@ -322,7 +387,8 @@ def artist(request,name):
             albums.append(albums_all[i])
             pictures.append(pictures_all[i])
         passedAlbums.append(albums_all[i])
-    ################################
+
+    # get similar artists
     similar_artists=[]
     artist_pictures=[]
     endofrow=[]
@@ -335,6 +401,14 @@ def artist(request,name):
             endofrow.append(False)
     similar=zip(similar_artists,artist_pictures,endofrow)
     albpic=zip(albums,pictures)
-    ################################
-    context={'name':name, 'search_form':form,'genres':genres,'popularity':popularity, 'image':image, 'followers':followers, 'albpic':albpic, 'similar':similar}
+
+    context={'name':name,
+             'search_form':form,
+             'genres':genres,
+             'popularity':popularity,
+             'image':image,
+             'followers':followers,
+             'albpic':albpic,
+             'similar':similar
+             }
     return render(request,'App/artist.html' ,context)
